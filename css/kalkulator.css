@@ -1,0 +1,380 @@
+/* ========================================
+   KALKULATOR.CSS - JHON338xDEVICES
+   ======================================== */
+
+:root {
+    --bg-color: #06090e;
+    --card-bg: #0f141d;
+    --accent-blue: #4bd5ff;
+    --accent-green: #25D366;
+    --accent-red: #ff3333;
+    --accent-orange: #ff9500;
+    --text-main: #ffffff;
+    --text-sub: #8a93a6;
+    --border-tech: #2a4b6e;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Rajdhani', sans-serif;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.kalkulator-container {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    background-color: var(--bg-color);
+    position: relative;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    padding-bottom: 30px;
+    background-image: radial-gradient(circle at 50% 0%, rgba(42, 75, 110, 0.15), transparent 60%);
+}
+
+/* ========== HEADER ========== */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-tech);
+    background-color: rgba(6, 9, 14, 0.95);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+}
+
+.back-btn {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-tech);
+    color: var(--accent-blue);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: 0.2s;
+}
+
+.back-btn:active {
+    background-color: var(--accent-blue);
+    color: #000;
+}
+
+.header-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.header-title .accent {
+    color: var(--accent-blue);
+}
+
+.mode-btn {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-tech);
+    color: var(--accent-orange);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.mode-btn:active {
+    background-color: var(--accent-orange);
+    color: #000;
+}
+
+/* ========== DISPLAY ========== */
+.display-section {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-tech);
+    border-radius: 16px;
+    margin: 15px;
+    padding: 20px;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.mode-indicator {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    color: var(--accent-green);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.mode-indicator i {
+    font-size: 0.7rem;
+}
+
+.display-currency {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    color: var(--accent-blue);
+    margin-bottom: 4px;
+}
+
+.display-main {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+    word-break: break-all;
+    line-height: 1.2;
+    min-height: 42px;
+    overflow-wrap: anywhere;
+}
+
+.display-riwayat {
+    font-size: 0.85rem;
+    color: var(--text-sub);
+    margin-top: 8px;
+    min-height: 20px;
+    text-align: right;
+}
+
+/* ========== KEYPAD ========== */
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 0 15px;
+    margin-bottom: 25px;
+}
+
+.key {
+    aspect-ratio: 1;
+    border-radius: 16px;
+    border: 1px solid var(--border-tech);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--card-bg);
+    color: var(--text-main);
+}
+
+.key:active {
+    transform: scale(0.9);
+}
+
+.key-num {
+    background-color: #1a1f2e;
+    border-color: rgba(42, 75, 110, 0.5);
+}
+
+.key-num:active {
+    background-color: #2a3040;
+    border-color: var(--accent-blue);
+}
+
+.key-func {
+    background-color: #1e2433;
+    color: var(--accent-orange);
+    font-size: 0.9rem;
+    border-color: rgba(255, 149, 0, 0.3);
+}
+
+.key-func:active {
+    background-color: var(--accent-orange);
+    color: #000;
+}
+
+.key-op {
+    background-color: #1a2a3a;
+    color: var(--accent-blue);
+    font-size: 1.2rem;
+    border-color: rgba(75, 213, 255, 0.3);
+}
+
+.key-op:active {
+    background-color: var(--accent-blue);
+    color: #000;
+}
+
+.key-equal {
+    background: linear-gradient(135deg, var(--accent-blue), #38b2d9);
+    color: #000;
+    font-size: 1.3rem;
+    border: none;
+}
+
+.key-equal:active {
+    background: linear-gradient(135deg, #38b2d9, var(--accent-blue));
+    box-shadow: 0 0 20px rgba(75, 213, 255, 0.5);
+}
+
+/* ========== SECTION TITLE ========== */
+.section-title-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 0 15px;
+}
+
+.section-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border: 1px solid var(--border-tech);
+    padding: 6px 20px;
+    border-radius: 6px;
+    background-color: rgba(42, 75, 110, 0.2);
+    box-shadow: 0 0 10px rgba(75, 213, 255, 0.1);
+}
+
+/* ========== RIWAYAT ========== */
+.riwayat-container {
+    margin: 0 15px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-tech);
+    border-radius: 12px;
+    padding: 10px;
+    min-height: 80px;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.riwayat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.riwayat-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: var(--text-sub);
+    gap: 8px;
+}
+
+.riwayat-empty i {
+    font-size: 1.5rem;
+    color: var(--border-tech);
+}
+
+.riwayat-empty p {
+    font-size: 0.8rem;
+}
+
+.riwayat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: rgba(15, 20, 29, 0.6);
+    border-radius: 8px;
+    border: 1px solid rgba(42, 75, 110, 0.2);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.riwayat-item:active {
+    border-color: var(--accent-blue);
+    background-color: rgba(75, 213, 255, 0.05);
+}
+
+.riwayat-kalkulasi {
+    font-size: 0.75rem;
+    color: var(--text-sub);
+}
+
+.riwayat-hasil {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
+.clear-riwayat-btn {
+    width: 100%;
+    background-color: transparent;
+    border: 1px solid rgba(255, 51, 51, 0.3);
+    color: var(--accent-red);
+    padding: 8px;
+    border-radius: 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
+    transition: 0.2s;
+}
+
+.clear-riwayat-btn:active {
+    background-color: var(--accent-red);
+    color: #fff;
+}
+
+/* ========== FOOTER ========== */
+footer {
+    text-align: center;
+    margin-top: 20px;
+    padding: 15px 20px;
+    border-top: 1px dashed var(--border-tech);
+    color: var(--text-sub);
+    font-size: 0.75rem;
+}
+
+.dev-credit {
+    color: var(--accent-blue);
+    font-family: 'Orbitron', sans-serif;
+    font-weight: bold;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    letter-spacing: 1px;
+}
+
+/* ========== SCROLLBAR ========== */
+.riwayat-container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.riwayat-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.riwayat-container::-webkit-scrollbar-thumb {
+    background: var(--border-tech);
+    border-radius: 4px;
+}

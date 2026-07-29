@@ -1,0 +1,336 @@
+/* ========================================
+   ALAT.CSS - Alat Generator JHON338xDEVICES
+   ======================================== */
+
+:root {
+    --bg-color: #06090e;
+    --card-bg: #0f141d;
+    --accent-blue: #4bd5ff;
+    --accent-red: #ff3333;
+    --accent-green: #25D366;
+    --accent-purple: #a855f7;
+    --text-main: #ffffff;
+    --text-sub: #8a93a6;
+    --border-tech: #2a4b6e;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Rajdhani', sans-serif;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.alat-container {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    background-color: var(--bg-color);
+    position: relative;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    padding-bottom: 40px;
+    background-image: radial-gradient(circle at 50% 0%, rgba(42, 75, 110, 0.15), transparent 60%);
+}
+
+/* ========== HEADER ========== */
+header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-tech);
+    background-color: rgba(6, 9, 14, 0.95);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+}
+
+.back-btn {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-tech);
+    color: var(--accent-blue);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: 0.2s;
+    text-decoration: none;
+}
+
+.back-btn:active {
+    background-color: var(--accent-blue);
+    color: #000;
+}
+
+.header-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.header-title .accent {
+    color: var(--accent-blue);
+}
+
+/* ========== MAIN ========== */
+main {
+    padding: 15px;
+}
+
+/* ========== ALAT CARD ========== */
+.alat-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-tech);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: 0.2s;
+}
+
+.alat-card:hover {
+    border-color: rgba(75, 213, 255, 0.4);
+}
+
+.alat-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(42, 75, 110, 0.4);
+}
+
+.alat-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(75, 213, 255, 0.08);
+    border: 1px solid var(--border-tech);
+    border-radius: 12px;
+    color: var(--accent-blue);
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.alat-title h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+
+.alat-title p {
+    font-size: 0.75rem;
+    color: var(--text-sub);
+}
+
+/* ========== FORM ========== */
+.alat-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.input-label {
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.alat-input {
+    width: 100%;
+    padding: 12px 14px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-tech);
+    color: var(--text-main);
+    border-radius: 10px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.95rem;
+    outline: none;
+    transition: 0.2s;
+}
+
+.alat-input:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 8px rgba(75, 213, 255, 0.2);
+}
+
+.alat-select {
+    width: 100%;
+    padding: 12px 14px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-tech);
+    color: var(--text-main);
+    border-radius: 10px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.95rem;
+    outline: none;
+    cursor: pointer;
+}
+
+.alat-select option {
+    background-color: var(--card-bg);
+    color: var(--text-main);
+}
+
+.alat-range {
+    width: 100%;
+    height: 5px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--border-tech);
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+}
+
+.alat-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    background: var(--accent-blue);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(75, 213, 255, 0.4);
+}
+
+/* ========== GENERATE BUTTON ========== */
+.generate-btn {
+    background: linear-gradient(135deg, var(--accent-blue), #38b2d9);
+    color: #000;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.2s;
+    letter-spacing: 1px;
+    margin-top: 4px;
+}
+
+.generate-btn:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+}
+
+.generate-btn i {
+    font-size: 0.9rem;
+}
+
+/* ========== LOADING ========== */
+.loading-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px;
+    margin-top: 10px;
+    color: var(--accent-blue);
+    font-size: 0.85rem;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.loader-small {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border-tech);
+    border-top: 2px solid var(--accent-blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ========== RESULT ========== */
+.result-box {
+    margin-top: 12px;
+    text-align: center;
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.result-box img {
+    width: 100%;
+    max-height: 350px;
+    object-fit: contain;
+    border-radius: 10px;
+    border: 1px solid var(--border-tech);
+    margin-bottom: 10px;
+    background-color: #000;
+}
+
+.download-btn {
+    background-color: var(--accent-green);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
+    letter-spacing: 1px;
+}
+
+.download-btn:active {
+    transform: scale(0.93);
+}
+
+/* ========== FOOTER ========== */
+footer {
+    text-align: center;
+    margin-top: 20px;
+    padding: 15px 20px;
+    border-top: 1px dashed var(--border-tech);
+    color: var(--text-sub);
+    font-size: 0.75rem;
+}
+
+.dev-credit {
+    color: var(--accent-blue);
+    font-family: 'Orbitron', sans-serif;
+    font-weight: bold;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    letter-spacing: 1px;
+}
