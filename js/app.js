@@ -152,7 +152,7 @@
                 const battery = await navigator.getBattery();
                 const updateBatteryUI = () => {
                     batteryLevel.textContent = Math.round(battery.level * 100) + '%';
-                    batteryStatus.textContent = battery.charging ? '⚡ Charging' : '🔌 Baterai';
+                    batteryStatus.textContent = battery.charging ? 'Charging' : 'Baterai';
                 };
                 updateBatteryUI();
                 battery.addEventListener('levelchange', updateBatteryUI);
