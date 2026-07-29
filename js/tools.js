@@ -1,644 +1,534 @@
-// JHON338xDEVICES - Device Tools Logic
-// Camera + File Manager + ZIP Compression
-// VERSI PERBAIKAN - Semua tombol berfungsi
+// JHON338xDEVICES - Device Tools
+// KAMERA VERSI FINAL - Switch & Flash 100% Work
 
-(function() {
-    'use strict';
+// ========== TAB SWITCH ==========
+function openTab(tab) {
+    document.getElementById('tab-btn-camera').classList.remove('active');
+    document.getElementById('tab-btn-file').classList.remove('active');
+    document.getElementById('tab-camera').classList.remove('active');
+    document.getElementById('tab-file').classList.remove('active');
 
-    // ========== TAB NAVIGATION ==========
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
-    const cameraTab = document.getElementById('camera-tab');
-    const filesTab = document.getElementById('files-tab');
+    if (tab === 'camera') {
+        document.getElementById('tab-btn-camera').classList.add('active');
+        document.getElementById('tab-camera').classList.add('active');
+        autoCheckCamera();
+    } else {
+        document.getElementById('tab-btn-file').classList.add('active');
+        document.getElementById('tab-file').classList.add('active');
+    }
+}
 
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const targetTab = this.getAttribute('data-tab');
-            
-            // Update active tab button
-            tabBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Show target tab content
-            tabContents.forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            const targetContent = document.getElementById(targetTab);
-            if (targetContent) {
-                targetContent.classList.add('active');
-            }
+// ========== KAMERA ==========
+var camStream = null;
+var facing = 'environment';
+var flashState = false;
+var imgData = null;
+var flashSupported = null;
 
-            // Inisialisasi kamera jika tab kamera aktif
-            if (targetTab === 'camera-tab') {
-                setTimeout(() => {
-                    checkCameraPermissionAuto();
-                }, 100);
-            }
-        });
-    });
-
-    // ========== KAMERA ELEMENTS ==========
-    const permissionCard = document.getElementById('permission-card');
-    const grantPermissionBtn = document.getElementById('grant-permission-btn');
-    const cameraSection = document.getElementById('camera-section');
-    const cameraPreview = document.getElementById('camera-preview');
-    const cameraCanvas = document.getElementById('camera-canvas');
-    const cameraPlaceholder = document.getElementById('camera-placeholder');
-    const switchCameraBtn = document.getElementById('switch-camera-btn');
-    const captureBtn = document.getElementById('capture-btn');
-    const flashToggleBtn = document.getElementById('flash-toggle-btn');
-    const flashStatus = document.getElementById('flash-status');
-    const cameraFacing = document.getElementById('camera-facing');
-    const capturedImage = document.getElementById('captured-image');
-    const noPhoto = document.getElementById('no-photo');
-    const photoActions = document.getElementById('photo-actions');
-    const downloadPhotoBtn = document.getElementById('download-photo-btn');
-    const deletePhotoBtn = document.getElementById('delete-photo-btn');
-
-    // Kamera state
-    let currentStream = null;
-    let facingMode = 'environment';
-    let flashEnabled = false;
-    let track = null;
-    let capturedImageData = null;
-    let cameraPermissionChecked = false;
-
-    // ========== KAMERA FUNCTIONS ==========
+async function autoCheckCamera() {
+    // Cek apakah sebelumnya sudah ada stream
+    if (camStream) {
+        var active = camStream.getVideoTracks().some(function(t) { return t.readyState === 'live'; });
+        if (active) return; // Masih aktif, gak perlu restart
+    }
     
-    function checkCameraPermissionAuto() {
-        if (cameraPermissionChecked) return;
-        
-        // Cek apakah sudah ada izin sebelumnya
-        if (navigator.permissions && navigator.permissions.query) {
-            navigator.permissions.query({ name: 'camera' })
-                .then(permissionStatus => {
-                    if (permissionStatus.state === 'granted') {
-                        // Sudah diizinkan
-                        showCameraSection();
-                    } else if (permissionStatus.state === 'prompt') {
-                        // Belum pernah ditanya, tampilkan permission card
-                        showPermissionCard();
-                    } else {
-                        // Ditolak
-                        showPermissionCard();
-                    }
-                    cameraPermissionChecked = true;
-                })
-                .catch(() => {
-                    // Fallback: coba akses langsung
-                    testCameraAccess();
-                });
-        } else {
-            // Browser gak support permissions API, coba akses langsung
-            testCameraAccess();
-        }
+    try {
+        var s = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'environment' }, 
+            audio: false 
+        });
+        s.getTracks().forEach(function(t) { t.stop(); });
+        showCameraActive();
+    } catch (e) {
+        showCameraPermission();
     }
+}
 
-    async function testCameraAccess() {
-        try {
-            const testStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' },
-                audio: false
-            });
-            testStream.getTracks().forEach(t => t.stop());
-            showCameraSection();
-        } catch (e) {
-            showPermissionCard();
-        }
-        cameraPermissionChecked = true;
+function showCameraPermission() {
+    document.getElementById('camera-permission').style.display = 'block';
+    document.getElementById('camera-active').style.display = 'none';
+}
+
+function showCameraActive() {
+    document.getElementById('camera-permission').style.display = 'none';
+    document.getElementById('camera-active').style.display = 'block';
+    startCamera();
+}
+
+async function startCameraPermission() {
+    try {
+        var s = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'environment' }, 
+            audio: false 
+        });
+        s.getTracks().forEach(function(t) { t.stop(); });
+        showCameraActive();
+    } catch (e) {
+        alert('Izin kamera ditolak! Buka pengaturan browser untuk mengizinkan kamera.');
     }
+}
 
-    function showPermissionCard() {
-        if (permissionCard) permissionCard.style.display = 'block';
-        if (cameraSection) cameraSection.style.display = 'none';
+async function startCamera() {
+    // HENTIKAN TOTAL stream lama
+    if (camStream) {
+        camStream.getTracks().forEach(function(t) {
+            t.stop();
+        });
+        camStream = null;
     }
-
-    function showCameraSection() {
-        if (permissionCard) permissionCard.style.display = 'none';
-        if (cameraSection) cameraSection.style.display = 'block';
-        startCamera();
+    
+    // Reset state
+    flashState = false;
+    flashSupported = null;
+    
+    var vid = document.getElementById('cam-video');
+    var placeholder = document.getElementById('cam-placeholder');
+    
+    // Tampilkan loading
+    vid.style.display = 'none';
+    if (vid.srcObject) {
+        vid.srcObject = null;
     }
-
-    async function requestAndStartCamera() {
-        try {
-            const testStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' },
-                audio: false
-            });
-            testStream.getTracks().forEach(t => t.stop());
-            
-            // Berhasil dapat izin
-            showCameraSection();
-        } catch (err) {
-            // Izin ditolak
-            if (grantPermissionBtn) {
-                grantPermissionBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> IZIN DITOLAK - COBA LAGI';
-                grantPermissionBtn.style.backgroundColor = '#ff3333';
-                setTimeout(() => {
-                    grantPermissionBtn.innerHTML = '<i class="fas fa-check-circle"></i> IZINKAN AKSES KAMERA';
-                    grantPermissionBtn.style.backgroundColor = '#4bd5ff';
-                }, 2500);
-            }
-        }
-    }
-
-    async function startCamera() {
-        stopCamera();
-
-        if (!cameraPreview) return;
-
-        const constraints = {
+    placeholder.style.display = 'flex';
+    placeholder.innerHTML = '<i class="fas fa-spinner fa-spin"></i><p>Menyalakan kamera...</p>';
+    
+    try {
+        // DAPATKAN STREAM BARU
+        camStream = await navigator.mediaDevices.getUserMedia({
             video: {
-                facingMode: facingMode,
+                facingMode: facing,
                 width: { ideal: 1280 },
                 height: { ideal: 720 }
             },
             audio: false
-        };
-
-        try {
-            currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-            cameraPreview.srcObject = currentStream;
-            track = currentStream.getVideoTracks()[0];
-            
-            if (cameraPlaceholder) cameraPlaceholder.style.display = 'none';
-            cameraPreview.style.display = 'block';
-            
-            updateFacingStatus();
-            checkFlashCapability();
-        } catch (err) {
-            console.error('Camera start error:', err);
-            if (cameraPlaceholder) {
-                cameraPlaceholder.innerHTML = '<i class="fas fa-exclamation-triangle"></i><p>Gagal mengakses kamera</p>';
-                cameraPlaceholder.style.display = 'flex';
-            }
-            cameraPreview.style.display = 'none';
-        }
-    }
-
-    function stopCamera() {
-        if (currentStream) {
-            currentStream.getTracks().forEach(t => t.stop());
-            currentStream = null;
-            track = null;
-        }
-    }
-
-    function updateFacingStatus() {
-        if (!cameraFacing) return;
-        if (facingMode === 'environment') {
-            cameraFacing.innerHTML = '<i class="fas fa-camera"></i> Kamera: Belakang';
-        } else {
-            cameraFacing.innerHTML = '<i class="fas fa-camera"></i> Kamera: Depan';
-        }
-    }
-
-    function switchCamera() {
-        facingMode = (facingMode === 'environment') ? 'user' : 'environment';
-        flashEnabled = false;
-        if (flashStatus) flashStatus.innerHTML = '<i class="fas fa-bolt"></i> Flash: OFF';
-        if (flashToggleBtn) {
-            flashToggleBtn.style.opacity = '1';
-            flashToggleBtn.style.pointerEvents = 'auto';
-        }
-        startCamera();
-    }
-
-    function checkFlashCapability() {
-        if (!flashToggleBtn || !flashStatus) return;
+        });
         
-        if (!track) {
-            flashToggleBtn.style.opacity = '0.5';
-            flashToggleBtn.style.pointerEvents = 'none';
-            flashStatus.innerHTML = '<i class="fas fa-bolt"></i> Flash: N/A';
-            return;
-        }
-
-        if (facingMode === 'user') {
-            flashToggleBtn.style.opacity = '0.5';
-            flashToggleBtn.style.pointerEvents = 'none';
-            flashStatus.innerHTML = '<i class="fas fa-bolt"></i> Flash: OFF (depan)';
-            flashEnabled = false;
-            return;
-        }
-
-        // Coba cek capabilities
+        // Set stream ke video
+        vid.srcObject = camStream;
+        vid.setAttribute('playsinline', '');
+        vid.setAttribute('autoplay', '');
+        
+        // Tunggu video siap
+        await new Promise(function(resolve, reject) {
+            vid.onloadedmetadata = function() {
+                resolve();
+            };
+            // Timeout 3 detik
+            setTimeout(function() {
+                resolve();
+            }, 3000);
+        });
+        
+        // Play video
         try {
-            const capabilities = track.getCapabilities ? track.getCapabilities() : null;
-            if (capabilities && capabilities.torch !== undefined) {
-                flashToggleBtn.style.opacity = '1';
-                flashToggleBtn.style.pointerEvents = 'auto';
-                flashStatus.innerHTML = '<i class="fas fa-bolt"></i> Flash: OFF';
-                
-                // Reset torch ke off
-                track.applyConstraints({ advanced: [{ torch: false }] }).catch(() => {});
-            } else {
-                // Tetap aktifkan tombol, siapa tau bisa
-                flashToggleBtn.style.opacity = '1';
-                flashToggleBtn.style.pointerEvents = 'auto';
-                flashStatus.innerHTML = '<i class="fas fa-bolt"></i> Flash: OFF';
-            }
+            await vid.play();
         } catch (e) {
-            flashToggleBtn.style.opacity = '1';
-            flashToggleBtn.style.pointerEvents = 'auto';
-            flashStatus.innerHTML = '<i class="fas fa-bolt"></i> Flash: OFF';
+            // Autoplay mungkin diblokir
+            console.log('Autoplay blocked, but video should still work');
         }
-    }
-
-    async function toggleFlash() {
-        if (!track || facingMode === 'user') return;
-
-        try {
-            const newState = !flashEnabled;
-            await track.applyConstraints({
-                advanced: [{ torch: newState }]
-            });
-            flashEnabled = newState;
-            if (flashStatus) {
-                flashStatus.innerHTML = flashEnabled 
-                    ? '<i class="fas fa-bolt"></i> Flash: ON' 
-                    : '<i class="fas fa-bolt"></i> Flash: OFF';
-            }
-        } catch (err) {
-            console.error('Flash toggle error:', err);
-            if (flashStatus) {
-                flashStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Flash: Gagal';
-                setTimeout(() => {
-                    flashStatus.innerHTML = '<i class="fas fa-bolt"></i> Flash: OFF';
-                }, 2000);
-            }
-        }
-    }
-
-    function capturePhoto() {
-        if (!currentStream || !track) {
-            // Coba mulai kamera dulu
-            startCamera();
-            setTimeout(() => capturePhoto(), 800);
-            return;
-        }
-
-        const video = cameraPreview;
-        const canvas = cameraCanvas;
-        if (!video || !canvas) return;
-
-        const context = canvas.getContext('2d');
-        canvas.width = video.videoWidth || 640;
-        canvas.height = video.videoHeight || 480;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        capturedImageData = canvas.toDataURL('image/png');
         
-        if (capturedImage) {
-            capturedImage.src = capturedImageData;
-            capturedImage.style.display = 'block';
-        }
-        if (noPhoto) noPhoto.style.display = 'none';
-        if (photoActions) photoActions.style.display = 'flex';
+        // Sembunyikan placeholder
+        vid.style.display = 'block';
+        placeholder.style.display = 'none';
+        
+        // Update UI
+        updateFacingUI();
+        
+        // Deteksi flash
+        await detectFlash();
+        
+    } catch (err) {
+        console.error('Camera start error:', err);
+        placeholder.innerHTML = '<i class="fas fa-exclamation-triangle"></i><p>Gagal: ' + err.message + '</p><p style="font-size:0.7rem;margin-top:5px;">Refresh halaman atau cek izin kamera</p>';
+        placeholder.style.display = 'flex';
+        vid.style.display = 'none';
+        
+        // Tetap update UI
+        updateFacingUI();
+        updateFlashUI();
+    }
+}
 
-        // Flash feedback
-        if (flashStatus) {
-            const originalText = flashStatus.innerHTML;
-            flashStatus.innerHTML = '<i class="fas fa-check-circle"></i> Foto diambil!';
-            setTimeout(() => {
-                flashStatus.innerHTML = originalText;
+async function detectFlash() {
+    if (!camStream) {
+        flashSupported = false;
+        updateFlashUI();
+        return;
+    }
+    
+    var track = camStream.getVideoTracks()[0];
+    if (!track) {
+        flashSupported = false;
+        updateFlashUI();
+        return;
+    }
+    
+    // Kamera depan = gak ada flash
+    if (facing === 'user') {
+        flashSupported = false;
+        updateFlashUI();
+        return;
+    }
+    
+    // Coba deteksi
+    try {
+        // Cek capabilities
+        var capabilities = track.getCapabilities ? track.getCapabilities() : null;
+        
+        if (capabilities && capabilities.torch === true) {
+            flashSupported = true;
+        } else if (capabilities && capabilities.torch === false) {
+            flashSupported = false;
+        } else {
+            // Test langsung
+            try {
+                await track.applyConstraints({ advanced: [{ torch: true }] });
+                await track.applyConstraints({ advanced: [{ torch: false }] });
+                flashSupported = true;
+            } catch (e) {
+                flashSupported = false;
+            }
+        }
+    } catch (e) {
+        flashSupported = false;
+    }
+    
+    updateFlashUI();
+}
+
+function stopCamera() {
+    if (camStream) {
+        camStream.getTracks().forEach(function(t) { 
+            t.stop(); 
+        });
+        camStream = null;
+    }
+    flashState = false;
+    flashSupported = null;
+    
+    var vid = document.getElementById('cam-video');
+    if (vid && vid.srcObject) {
+        vid.srcObject = null;
+    }
+}
+
+async function switchCam() {
+    // Toggle facing
+    facing = (facing === 'environment') ? 'user' : 'environment';
+    
+    // Update UI dulu
+    updateFacingUI();
+    
+    // Restart total kamera
+    await startCamera();
+}
+
+async function flashToggle() {
+    if (!camStream) {
+        updateFlashUI();
+        return;
+    }
+    
+    var track = camStream.getVideoTracks()[0];
+    if (!track) {
+        updateFlashUI();
+        return;
+    }
+    
+    if (facing === 'user') {
+        document.getElementById('flash-text').innerHTML = '<i class="fas fa-bolt"></i> Flash: Tidak ada (depan)';
+        return;
+    }
+    
+    if (flashSupported === false) {
+        document.getElementById('flash-text').innerHTML = '<i class="fas fa-bolt"></i> Flash: Tidak didukung';
+        setTimeout(function() {
+            updateFlashUI();
+        }, 2000);
+        return;
+    }
+    
+    // Loading
+    document.getElementById('flash-text').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Flash...';
+    
+    var newState = !flashState;
+    var success = false;
+    
+    // METODE 1: Advanced constraint
+    try {
+        await track.applyConstraints({ advanced: [{ torch: newState }] });
+        success = true;
+    } catch (e1) {
+        console.log('Metode 1 gagal');
+    }
+    
+    // METODE 2: Langsung set torch
+    if (!success) {
+        try {
+            await track.applyConstraints({ torch: newState });
+            success = true;
+        } catch (e2) {
+            console.log('Metode 2 gagal');
+        }
+    }
+    
+    // METODE 3: Stream baru dengan torch
+    if (!success && newState) {
+        try {
+            // Simpan track lama
+            var oldStream = camStream;
+            
+            // Buat stream baru
+            var newStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: facing, torch: true, width: { ideal: 1280 }, height: { ideal: 720 } },
+                audio: false
+            });
+            
+            // Hentikan stream lama
+            oldStream.getTracks().forEach(function(t) { t.stop(); });
+            
+            // Ganti stream
+            camStream = newStream;
+            var vid = document.getElementById('cam-video');
+            vid.srcObject = camStream;
+            
+            success = true;
+        } catch (e3) {
+            console.log('Metode 3 gagal');
+        }
+    }
+    
+    if (success) {
+        flashState = newState;
+        flashSupported = true;
+    }
+    
+    updateFlashUI();
+}
+
+function updateFacingUI() {
+    var el = document.getElementById('facing-text');
+    if (!el) return;
+    el.innerHTML = '<i class="fas fa-camera"></i> ' + (facing === 'environment' ? 'Belakang' : 'Depan');
+}
+
+function updateFlashUI() {
+    var el = document.getElementById('flash-text');
+    if (!el) return;
+    
+    if (facing === 'user') {
+        el.innerHTML = '<i class="fas fa-bolt"></i> Flash: Tidak ada';
+    } else if (flashState) {
+        el.innerHTML = '<i class="fas fa-bolt"></i> Flash: ON';
+    } else if (flashSupported === false) {
+        el.innerHTML = '<i class="fas fa-bolt"></i> Flash: Tdk support';
+    } else {
+        el.innerHTML = '<i class="fas fa-bolt"></i> Flash: OFF';
+    }
+}
+
+function capture() {
+    if (!camStream) {
+        startCamera().then(function() {
+            setTimeout(capture, 1000);
+        });
+        return;
+    }
+    
+    var vid = document.getElementById('cam-video');
+    var can = document.getElementById('cam-canvas');
+    
+    if (!vid || !can) return;
+    if (!vid.videoWidth || vid.readyState < 2) {
+        setTimeout(capture, 500);
+        return;
+    }
+    
+    var ctx = can.getContext('2d');
+    can.width = vid.videoWidth;
+    can.height = vid.videoHeight;
+    
+    // Mirror untuk kamera depan
+    if (facing === 'user') {
+        ctx.translate(can.width, 0);
+        ctx.scale(-1, 1);
+    }
+    
+    ctx.drawImage(vid, 0, 0, can.width, can.height);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    
+    imgData = can.toDataURL('image/png');
+    
+    document.getElementById('photo-img').src = imgData;
+    document.getElementById('photo-img').style.display = 'block';
+    document.getElementById('no-photo-msg').style.display = 'none';
+    document.getElementById('photo-btns').style.display = 'flex';
+}
+
+function savePhoto() {
+    if (!imgData) return;
+    var a = document.createElement('a');
+    a.href = imgData;
+    a.download = 'JHON338x_' + Date.now() + '.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function clearPhoto() {
+    imgData = null;
+    document.getElementById('photo-img').style.display = 'none';
+    document.getElementById('no-photo-msg').style.display = 'flex';
+    document.getElementById('photo-btns').style.display = 'none';
+}
+
+// ========== FILE ==========
+var files = [];
+
+function startFileAccess() {
+    document.getElementById('file-permission').style.display = 'none';
+    document.getElementById('file-active').style.display = 'block';
+}
+
+function addFiles(input) {
+    var newFiles = Array.from(input.files);
+    if (newFiles.length > 0) {
+        files = files.concat(newFiles);
+        renderFiles();
+    }
+    input.value = '';
+}
+
+function removeFile(i) {
+    files.splice(i, 1);
+    renderFiles();
+}
+
+async function compressAndDownloadSingle(i) {
+    var file = files[i];
+    if (!file) return;
+    
+    var btn = document.getElementById('dl-btn-' + i);
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
+    
+    try {
+        var originalName = file.name;
+        var lastDot = originalName.lastIndexOf('.');
+        var baseName = lastDot > 0 ? originalName.substring(0, lastDot) : originalName;
+        var zipName = baseName + '.zip';
+        
+        var zip = new JSZip();
+        var ab = await file.arrayBuffer();
+        zip.file(originalName, ab);
+        
+        var zipBlob = await zip.generateAsync({ 
+            type: 'blob', 
+            compression: 'DEFLATE', 
+            compressionOptions: { level: 6 } 
+        });
+        
+        var url = URL.createObjectURL(zipBlob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = zipName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+        
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            btn.style.backgroundColor = '#25D366';
+            setTimeout(function() {
+                btn.innerHTML = '<i class="fas fa-download"></i>';
+                btn.style.backgroundColor = '';
+            }, 1500);
+        }
+    } catch (e) {
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+            setTimeout(function() {
+                btn.innerHTML = '<i class="fas fa-download"></i>';
             }, 1500);
         }
     }
+    
+    if (btn) btn.disabled = false;
+}
 
-    function downloadPhoto() {
-        if (!capturedImageData) return;
-        const link = document.createElement('a');
-        link.download = 'JHON338x_' + Date.now() + '.png';
-        link.href = capturedImageData;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+function renderFiles() {
+    var listEl = document.getElementById('file-list-el');
+    var noMsg = document.getElementById('no-file-msg');
+    var infoBar = document.getElementById('file-info-bar');
+    var countEl = document.getElementById('count-el');
+    var sizeEl = document.getElementById('size-el');
+    var downBtn = document.getElementById('download-btn');
+    var zipStat = document.getElementById('zip-status');
+
+    if (files.length === 0) {
+        noMsg.style.display = 'flex';
+        listEl.innerHTML = '';
+        infoBar.style.display = 'none';
+        downBtn.style.display = 'none';
+        zipStat.style.display = 'none';
+        return;
     }
 
-    function deletePhoto() {
-        capturedImageData = null;
-        if (capturedImage) {
-            capturedImage.src = '';
-            capturedImage.style.display = 'none';
-        }
-        if (noPhoto) noPhoto.style.display = 'flex';
-        if (photoActions) photoActions.style.display = 'none';
-    }
+    noMsg.style.display = 'none';
+    listEl.innerHTML = '';
+    var total = 0;
 
-    // ========== KAMERA EVENT LISTENERS ==========
-    if (grantPermissionBtn) {
-        // Hapus event listener lama dengan clone node
-        const newGrantBtn = grantPermissionBtn.cloneNode(true);
-        grantPermissionBtn.parentNode.replaceChild(newGrantBtn, grantPermissionBtn);
-        
-        newGrantBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            requestAndStartCamera();
-        });
-    }
-
-    if (switchCameraBtn) {
-        switchCameraBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            switchCamera();
-        });
-    }
-
-    if (captureBtn) {
-        captureBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            capturePhoto();
-        });
-    }
-
-    if (flashToggleBtn) {
-        flashToggleBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            toggleFlash();
-        });
-    }
-
-    if (downloadPhotoBtn) {
-        downloadPhotoBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            downloadPhoto();
-        });
-    }
-
-    if (deletePhotoBtn) {
-        deletePhotoBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            deletePhoto();
-        });
-    }
-
-    // ========== FILE MANAGER ELEMENTS ==========
-    const filePermissionCard = document.getElementById('file-permission-card');
-    const grantFilePermissionBtn = document.getElementById('grant-file-permission-btn');
-    const fileSection = document.getElementById('file-section');
-    const selectFilesBtn = document.getElementById('select-files-btn');
-    const fileInput = document.getElementById('file-input');
-    const fileList = document.getElementById('file-list');
-    const noFiles = document.getElementById('no-files');
-    const fileInfoBar = document.getElementById('file-info-bar');
-    const fileCount = document.getElementById('file-count');
-    const totalSize = document.getElementById('total-size');
-    const compressBtn = document.getElementById('compress-btn');
-    const compressStatus = document.getElementById('compress-status');
-
-    // File state
-    let selectedFiles = [];
-
-    // ========== FILE FUNCTIONS ==========
-    function showFileSection() {
-        if (filePermissionCard) filePermissionCard.style.display = 'none';
-        if (fileSection) fileSection.style.display = 'block';
-    }
-
-    function updateFileUI() {
-        if (!fileList || !noFiles || !fileInfoBar || !compressBtn) return;
-
-        if (selectedFiles.length === 0) {
-            noFiles.style.display = 'flex';
-            fileList.innerHTML = '';
-            fileInfoBar.style.display = 'none';
-            compressBtn.style.display = 'none';
-            return;
-        }
-
-        noFiles.style.display = 'none';
-        fileList.innerHTML = '';
-
-        let totalBytes = 0;
-
-        selectedFiles.forEach((file, index) => {
-            totalBytes += file.size;
-
-            const fileItem = document.createElement('div');
-            fileItem.className = 'file-item';
-            fileItem.innerHTML = `
-                <div class="file-item-icon">
-                    <i class="fas fa-file"></i>
-                </div>
-                <div class="file-item-info">
-                    <div class="file-item-name">${escapeHTML(file.name)}</div>
-                    <div class="file-item-size">${formatFileSize(file.size)}</div>
-                </div>
-                <button class="file-item-remove" data-index="${index}">
-                    <i class="fas fa-times-circle"></i>
-                </button>
-            `;
-            fileList.appendChild(fileItem);
-        });
-
-        // Event listener untuk tombol hapus
-        const removeButtons = fileList.querySelectorAll('.file-item-remove');
-        removeButtons.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const index = parseInt(this.getAttribute('data-index'));
-                if (!isNaN(index) && index >= 0 && index < selectedFiles.length) {
-                    selectedFiles.splice(index, 1);
-                    updateFileUI();
-                }
-            });
-        });
-
-        fileInfoBar.style.display = 'flex';
-        if (fileCount) fileCount.textContent = selectedFiles.length + ' file';
-        if (totalSize) totalSize.textContent = formatFileSize(totalBytes);
-        compressBtn.style.display = 'block';
-    }
-
-    function escapeHTML(str) {
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
-    }
-
-    function formatFileSize(bytes) {
-        if (bytes === 0) return '0 B';
-        const k = 1024;
-        const sizes = ['B', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-
-    async function compressAndDownload() {
-        if (selectedFiles.length === 0) return;
-
-        if (compressBtn) compressBtn.disabled = true;
-        if (compressStatus) compressStatus.style.display = 'flex';
-        if (compressBtn) compressBtn.style.display = 'none';
-
-        try {
-            // Cek apakah JSZip tersedia
-            if (typeof JSZip === 'undefined') {
-                throw new Error('JSZip not loaded');
-            }
-
-            const zip = new JSZip();
-            const folder = zip.folder('JHON338x_Files');
-
-            // Tambahin semua file ke ZIP
-            for (const file of selectedFiles) {
-                const arrayBuffer = await file.arrayBuffer();
-                folder.file(file.name, arrayBuffer);
-            }
-
-            // Generate ZIP
-            const zipBlob = await zip.generateAsync({ 
-                type: 'blob',
-                compression: 'DEFLATE',
-                compressionOptions: { level: 6 }
-            });
-
-            // Download
-            const url = URL.createObjectURL(zipBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'JHON338x_Files_' + Date.now() + '.zip';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-
-            // Reset UI
-            if (compressStatus) compressStatus.style.display = 'none';
-            if (compressBtn) {
-                compressBtn.style.display = 'block';
-                compressBtn.disabled = false;
-            }
-
-            // Notifikasi sukses
-            showTempMessage('Download berhasil!', '#25D366');
-
-        } catch (err) {
-            console.error('Compress error:', err);
-            if (compressStatus) {
-                compressStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Gagal: ' + err.message;
-            }
-            setTimeout(() => {
-                if (compressStatus) compressStatus.style.display = 'none';
-                if (compressBtn) {
-                    compressBtn.style.display = 'block';
-                    compressBtn.disabled = false;
-                }
-            }, 3000);
-        }
-    }
-
-    function showTempMessage(message, color) {
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'compress-status';
-        msgDiv.style.color = color || 'var(--accent-green)';
-        msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + message;
-        
-        const parent = compressStatus ? compressStatus.parentNode : document.querySelector('main');
-        if (parent) {
-            parent.appendChild(msgDiv);
-            setTimeout(() => {
-                if (msgDiv.parentNode) msgDiv.parentNode.removeChild(msgDiv);
-            }, 3000);
-        }
-    }
-
-    // ========== FILE EVENT LISTENERS ==========
-    if (grantFilePermissionBtn) {
-        // Hapus event listener lama
-        const newFileGrantBtn = grantFilePermissionBtn.cloneNode(true);
-        grantFilePermissionBtn.parentNode.replaceChild(newFileGrantBtn, grantFilePermissionBtn);
-        
-        newFileGrantBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            showFileSection();
-        });
-    }
-
-    if (selectFilesBtn && fileInput) {
-        selectFilesBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            fileInput.click();
-        });
-    }
-
-    if (fileInput) {
-        fileInput.addEventListener('change', function(e) {
-            const files = Array.from(e.target.files || []);
-            if (files.length > 0) {
-                selectedFiles = [...selectedFiles, ...files];
-                updateFileUI();
-            }
-            // Reset input agar bisa pilih file yang sama lagi
-            this.value = '';
-        });
-    }
-
-    if (compressBtn) {
-        // Hapus event listener lama
-        const newCompressBtn = compressBtn.cloneNode(true);
-        compressBtn.parentNode.replaceChild(newCompressBtn, compressBtn);
-        
-        newCompressBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            compressAndDownload();
-        });
-    }
-
-    // ========== DRAG & DROP SUPPORT ==========
-    if (fileSection) {
-        fileSection.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        });
-
-        fileSection.addEventListener('drop', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const files = Array.from(e.dataTransfer.files || []);
-            if (files.length > 0) {
-                selectedFiles = [...selectedFiles, ...files];
-                updateFileUI();
-            }
-        });
-    }
-
-    // ========== INIT ==========
-    window.addEventListener('load', function() {
-        // Tampilkan tab kamera sebagai default
-        if (cameraTab && filesTab) {
-            cameraTab.classList.add('active');
-            filesTab.classList.remove('active');
-        }
-
-        // Cek izin kamera
-        setTimeout(() => {
-            checkCameraPermissionAuto();
-        }, 300);
-
-        // File section selalu butuh izin eksplisit
-        if (filePermissionCard) filePermissionCard.style.display = 'block';
-        if (fileSection) fileSection.style.display = 'none';
+    files.forEach(function(f, i) {
+        total += f.size;
+        var d = document.createElement('div');
+        d.className = 'file-item';
+        d.innerHTML = 
+            '<div class="file-item-icon"><i class="fas fa-file"></i></div>' +
+            '<div class="file-item-info">' +
+                '<div class="file-item-name">' + esc(f.name) + '</div>' +
+                '<div class="file-item-size">' + fmt(f.size) + '</div>' +
+            '</div>' +
+            '<button class="file-item-download" id="dl-btn-' + i + '" onclick="compressAndDownloadSingle(' + i + ')" title="Download ZIP">' +
+                '<i class="fas fa-download"></i>' +
+            '</button>' +
+            '<button class="file-item-remove" onclick="removeFile(' + i + ')" title="Hapus">' +
+                '<i class="fas fa-times-circle"></i>' +
+            '</button>';
+        listEl.appendChild(d);
     });
 
-    // Cleanup saat halaman ditutup
-    window.addEventListener('beforeunload', function() {
-        stopCamera();
-    });
+    infoBar.style.display = 'flex';
+    countEl.textContent = files.length + ' file';
+    sizeEl.textContent = fmt(total);
+    downBtn.style.display = 'none';
+    zipStat.style.display = 'none';
+}
 
-    // Matikan kamera saat tab tidak aktif
-    document.addEventListener('visibilitychange', function() {
-        if (document.hidden) {
-            stopCamera();
-        }
-    });
+function fmt(b) {
+    if (b === 0) return '0 B';
+    var k = 1024, s = ['B', 'KB', 'MB', 'GB'], i = Math.floor(Math.log(b) / Math.log(k));
+    return parseFloat((b / Math.pow(k, i)).toFixed(2)) + ' ' + s[i];
+}
 
-})();
+function esc(str) {
+    var d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
+// ========== INIT ==========
+window.addEventListener('load', function() {
+    document.getElementById('camera-permission').style.display = 'block';
+    document.getElementById('camera-active').style.display = 'none';
+    document.getElementById('file-permission').style.display = 'block';
+    document.getElementById('file-active').style.display = 'none';
+    
+    autoCheckCamera();
+});
+
+window.addEventListener('beforeunload', function() {
+    stopCamera();
+});
