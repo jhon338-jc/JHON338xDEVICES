@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Kalkulator - JHON338xDEVICES</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/kalkulator.css">
+</head>
+<body>
+
+    <div class="kalkulator-container">
+        <!-- HEADER -->
+        <header>
+            <button class="back-btn" onclick="location.href='index.html'">
+                <i class="fas fa-arrow-left"></i> BACK
+            </button>
+            <div class="header-title">KALKU<span class="accent">LATOR</span></div>
+            <button class="mode-btn" id="mode-btn" onclick="toggleMode()">
+                <i class="fas fa-exchange-alt"></i>
+            </button>
+        </header>
+
+        <main>
+            <!-- DISPLAY -->
+            <div class="display-section">
+                <div class="mode-indicator" id="mode-indicator">
+                    <i class="fas fa-coins"></i> MODE RUPIAH
+                </div>
+                <div class="display-currency" id="display-currency">Rp</div>
+                <div class="display-main" id="display-main">0</div>
+                <div class="display-riwayat" id="display-riwayat"></div>
+            </div>
+
+            <!-- KEYPAD -->
+            <div class="keypad">
+                <!-- Baris 1 -->
+                <button class="key key-func" onclick="clearAll()">AC</button>
+                <button class="key key-func" onclick="deleteLast()">
+                    <i class="fas fa-delete-left"></i>
+                </button>
+                <button class="key key-func" onclick="inputOperator('%')">%</button>
+                <button class="key key-op" onclick="inputOperator('/')">÷</button>
+
+                <!-- Baris 2 -->
+                <button class="key key-num" onclick="inputNumber('7')">7</button>
+                <button class="key key-num" onclick="inputNumber('8')">8</button>
+                <button class="key key-num" onclick="inputNumber('9')">9</button>
+                <button class="key key-op" onclick="inputOperator('*')">×</button>
+
+                <!-- Baris 3 -->
+                <button class="key key-num" onclick="inputNumber('4')">4</button>
+                <button class="key key-num" onclick="inputNumber('5')">5</button>
+                <button class="key key-num" onclick="inputNumber('6')">6</button>
+                <button class="key key-op" onclick="inputOperator('-')">−</button>
+
+                <!-- Baris 4 -->
+                <button class="key key-num" onclick="inputNumber('1')">1</button>
+                <button class="key key-num" onclick="inputNumber('2')">2</button>
+                <button class="key key-num" onclick="inputNumber('3')">3</button>
+                <button class="key key-op" onclick="inputOperator('+')">+</button>
+
+                <!-- Baris 5 -->
+                <button class="key key-num key-zero" onclick="inputNumber('0')">0</button>
+                <button class="key key-num" onclick="inputNumber('00')">00</button>
+                <button class="key key-num" onclick="inputDot()">.</button>
+                <button class="key key-equal" onclick="calculate()">=</button>
+            </div>
+
+            <!-- RIWAYAT -->
+            <div class="section-title-wrapper">
+                <div class="section-title">RIWAYAT</div>
+            </div>
+            <div class="riwayat-container" id="riwayat-container">
+                <div id="riwayat-list" class="riwayat-list">
+                    <div class="riwayat-empty">
+                        <i class="fas fa-history"></i>
+                        <p>Belum ada riwayat</p>
+                    </div>
+                </div>
+                <button class="clear-riwayat-btn" id="clear-riwayat-btn" onclick="clearRiwayat()" style="display:none;">
+                    <i class="fas fa-trash-alt"></i> Hapus Riwayat
+                </button>
+            </div>
+
+        </main>
+
+        <footer>
+            <p>JHON338xDEVICES Kalkulator</p>
+            <p class="dev-credit">DEV BY JHON338</p>
+            <p>© 2026 All Rights Reserved</p>
+        </footer>
+    </div>
+
+    <script src="js/kalkulator.js"></script>
+</body>
+</html>

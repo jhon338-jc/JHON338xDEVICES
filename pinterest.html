@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Pinterest Search - JHON338xDEVICES</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/pinterest.css">
+</head>
+<body>
+
+    <div class="pinterest-container">
+        <!-- HEADER -->
+        <header>
+            <button class="back-btn" onclick="location.href='index.html'">
+                <i class="fas fa-arrow-left"></i> BACK
+            </button>
+            <div class="header-title">PINTEREST <span class="accent">SEARCH</span></div>
+        </header>
+
+        <main>
+            <!-- SEARCH BAR -->
+            <div class="search-card">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Cari gambar di Pinterest..." enterkeyhint="search">
+                    <button class="search-btn" id="searchBtn" onclick="searchPinterest()">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+                
+                <!-- SUGGESTIONS -->
+                <div class="suggestions" id="suggestions">
+                    <span class="suggestion-tag" onclick="quickSearch('wallpaper aesthetic')">Wallpaper Aesthetic</span>
+                    <span class="suggestion-tag" onclick="quickSearch('kucing lucu')">Kucing Lucu</span>
+                    <span class="suggestion-tag" onclick="quickSearch('anime art')">Anime Art</span>
+                    <span class="suggestion-tag" onclick="quickSearch('cyberpunk')">Cyberpunk</span>
+                    <span class="suggestion-tag" onclick="quickSearch('nature photography')">Nature</span>
+                    <span class="suggestion-tag" onclick="quickSearch('car modified')">Car Modified</span>
+                </div>
+            </div>
+
+            <!-- STATUS -->
+            <div id="statusBar" class="status-bar" style="display:none;">
+                <div id="statusText"></div>
+                <div id="resultCount"></div>
+            </div>
+
+            <!-- LOADING -->
+            <div id="loadingBox" class="loading-box" style="display:none;">
+                <div class="loader-pin"></div>
+                <p>Mencari gambar...</p>
+            </div>
+
+            <!-- ERROR -->
+            <div id="errorBox" class="error-box" style="display:none;">
+                <i class="fas fa-exclamation-circle"></i>
+                <p id="errorText">Gagal memuat gambar</p>
+                <button onclick="searchPinterest()">COBA LAGI</button>
+            </div>
+
+            <!-- IMAGE GRID -->
+            <div id="imageGrid" class="image-grid"></div>
+
+            <!-- LOAD MORE -->
+            <div id="loadMoreBox" style="display:none; text-align:center; padding:20px;">
+                <button class="load-more-btn" onclick="searchPinterest(true)">
+                    <i class="fas fa-plus"></i> LOAD MORE
+                </button>
+            </div>
+
+            <!-- EMPTY STATE -->
+            <div id="emptyState" class="empty-state">
+                <i class="fab fa-pinterest"></i>
+                <h3>Pinterest Image Search</h3>
+                <p>Cari gambar berkualitas tinggi dari Pinterest. Gunakan kata kunci di atas untuk memulai.</p>
+                <div class="empty-features">
+                    <div class="empty-feat">
+                        <i class="fas fa-image"></i>
+                        <span>Resolusi Tinggi</span>
+                    </div>
+                    <div class="empty-feat">
+                        <i class="fas fa-download"></i>
+                        <span>Download Langsung</span>
+                    </div>
+                    <div class="empty-feat">
+                        <i class="fas fa-bolt"></i>
+                        <span>Hasil Cepat</span>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- MODAL PREVIEW -->
+        <div id="previewModal" class="preview-modal" onclick="closePreview()">
+            <div class="preview-content" onclick="event.stopPropagation()">
+                <button class="preview-close" onclick="closePreview()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <img id="previewImage" src="" alt="Preview">
+                <div class="preview-info">
+                    <p id="previewTitle"></p>
+                </div>
+                <div class="preview-actions">
+                    <button class="preview-btn download-btn" onclick="downloadImage()">
+                        <i class="fas fa-download"></i> DOWNLOAD
+                    </button>
+                    <button class="preview-btn open-btn" onclick="openOriginal()">
+                        <i class="fas fa-external-link-alt"></i> BUKA ASLI
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>JHON338xDEVICES Pinterest Search</p>
+            <p class="dev-credit">DEV BY JHON338</p>
+        </footer>
+    </div>
+
+    <script src="js/pinterest.js"></script>
+</body>
+</html>

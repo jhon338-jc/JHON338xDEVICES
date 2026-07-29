@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Alat Generator - JHON338xDEVICES</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/alat.css">
+</head>
+<body>
+
+    <div class="alat-container">
+        <!-- HEADER -->
+        <header>
+            <button class="back-btn" onclick="location.href='index.html'">
+                <i class="fas fa-arrow-left"></i> BACK
+            </button>
+            <div class="header-title">ALAT <span class="accent">GENERATOR</span></div>
+        </header>
+
+        <main>
+            
+            <!-- IQC Generator -->
+            <div class="alat-card">
+                <div class="alat-header">
+                    <div class="alat-icon">
+                        <i class="fas fa-id-card"></i>
+                    </div>
+                    <div class="alat-title">
+                        <h3>IQC Generator</h3>
+                        <p>Buat kartu IQC kustom</p>
+                    </div>
+                </div>
+                <div class="alat-form">
+                    <label class="input-label">Teks IQC</label>
+                    <input type="text" id="iqc-text" class="alat-input" placeholder="Masukkan teks..." maxlength="50">
+                    <button class="generate-btn" onclick="generateIQC()">
+                        <i class="fas fa-magic"></i> GENERATE
+                    </button>
+                </div>
+                <div id="iqc-loading" class="loading-box" style="display:none;">
+                    <div class="loader-small"></div>
+                    <span>Memproses...</span>
+                </div>
+                <div id="iqc-result" class="result-box" style="display:none;">
+                    <img id="iqc-img" src="" alt="IQC">
+                    <button class="download-btn" onclick="downloadResult('iqc-img', 'IQC_')">
+                        <i class="fas fa-download"></i> DOWNLOAD
+                    </button>
+                </div>
+            </div>
+
+            <!-- Fake Dana -->
+            <div class="alat-card">
+                <div class="alat-header">
+                    <div class="alat-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="alat-title">
+                        <h3>Fake Dana</h3>
+                        <p>Screenshot Dana palsu</p>
+                    </div>
+                </div>
+                <div class="alat-form">
+                    <label class="input-label">Jumlah Nominal</label>
+                    <input type="number" id="dana-amount" class="alat-input" placeholder="50000" value="20000">
+                    <button class="generate-btn" onclick="generateDana()">
+                        <i class="fas fa-magic"></i> GENERATE
+                    </button>
+                </div>
+                <div id="dana-loading" class="loading-box" style="display:none;">
+                    <div class="loader-small"></div>
+                    <span>Memproses...</span>
+                </div>
+                <div id="dana-result" class="result-box" style="display:none;">
+                    <img id="dana-img" src="" alt="Dana">
+                    <button class="download-btn" onclick="downloadResult('dana-img', 'Dana_')">
+                        <i class="fas fa-download"></i> DOWNLOAD
+                    </button>
+                </div>
+            </div>
+
+            <!-- BRAT Canvas -->
+            <div class="alat-card">
+                <div class="alat-header">
+                    <div class="alat-icon">
+                        <i class="fas fa-paint-brush"></i>
+                    </div>
+                    <div class="alat-title">
+                        <h3>BRAT Canvas</h3>
+                        <p>Gambar style BRAT</p>
+                    </div>
+                </div>
+                <div class="alat-form">
+                    <label class="input-label">Teks</label>
+                    <input type="text" id="brat-text" class="alat-input" placeholder="Teks..." maxlength="30" value="BRAT">
+                    
+                    <label class="input-label">Warna</label>
+                    <select id="brat-warna" class="alat-select">
+                        <option value="White">Putih</option>
+                        <option value="Black">Hitam</option>
+                        <option value="Red">Merah</option>
+                        <option value="Blue">Biru</option>
+                        <option value="Green">Hijau</option>
+                        <option value="Pink">Pink</option>
+                        <option value="Yellow">Kuning</option>
+                        <option value="Purple">Ungu</option>
+                    </select>
+                    
+                    <label class="input-label">Blur: <span id="blur-val">2</span></label>
+                    <input type="range" id="brat-blur" class="alat-range" min="0" max="10" value="2" oninput="document.getElementById('blur-val').textContent=this.value">
+                    
+                    <button class="generate-btn" onclick="generateBRAT()">
+                        <i class="fas fa-magic"></i> GENERATE
+                    </button>
+                </div>
+                <div id="brat-loading" class="loading-box" style="display:none;">
+                    <div class="loader-small"></div>
+                    <span>Memproses...</span>
+                </div>
+                <div id="brat-result" class="result-box" style="display:none;">
+                    <img id="brat-img" src="" alt="BRAT">
+                    <button class="download-btn" onclick="downloadResult('brat-img', 'BRAT_')">
+                        <i class="fas fa-download"></i> DOWNLOAD
+                    </button>
+                </div>
+            </div>
+
+            <!-- Fake FF -->
+            <div class="alat-card">
+                <div class="alat-header">
+                    <div class="alat-icon">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <div class="alat-title">
+                        <h3>Fake FF</h3>
+                        <p>Screenshot Free Fire</p>
+                    </div>
+                </div>
+                <div class="alat-form">
+                    <label class="input-label">Nama FF</label>
+                    <input type="text" id="ff-name" class="alat-input" placeholder="Nama FF..." maxlength="30" value="Jhon338">
+                    <button class="generate-btn" onclick="generateFF()">
+                        <i class="fas fa-magic"></i> GENERATE
+                    </button>
+                </div>
+                <div id="ff-loading" class="loading-box" style="display:none;">
+                    <div class="loader-small"></div>
+                    <span>Memproses...</span>
+                </div>
+                <div id="ff-result" class="result-box" style="display:none;">
+                    <img id="ff-img" src="" alt="FF">
+                    <button class="download-btn" onclick="downloadResult('ff-img', 'FF_')">
+                        <i class="fas fa-download"></i> DOWNLOAD
+                    </button>
+                </div>
+            </div>
+
+            <!-- Fake ML -->
+            <div class="alat-card">
+                <div class="alat-header">
+                    <div class="alat-icon">
+                        <i class="fas fa-mobile-screen-button"></i>
+                    </div>
+                    <div class="alat-title">
+                        <h3>Fake ML</h3>
+                        <p>Screenshot Mobile Legends</p>
+                    </div>
+                </div>
+                <div class="alat-form">
+                    <label class="input-label">Nama ML</label>
+                    <input type="text" id="ml-name" class="alat-input" placeholder="Nama..." maxlength="30" value="Jhon338">
+                    <label class="input-label">Jumlah Diamond</label>
+                    <input type="number" id="ml-diamond" class="alat-input" placeholder="1000" value="1000">
+                    <button class="generate-btn" onclick="generateML()">
+                        <i class="fas fa-magic"></i> GENERATE
+                    </button>
+                </div>
+                <div id="ml-loading" class="loading-box" style="display:none;">
+                    <div class="loader-small"></div>
+                    <span>Memproses...</span>
+                </div>
+                <div id="ml-result" class="result-box" style="display:none;">
+                    <img id="ml-img" src="" alt="ML">
+                    <button class="download-btn" onclick="downloadResult('ml-img', 'ML_')">
+                        <i class="fas fa-download"></i> DOWNLOAD
+                    </button>
+                </div>
+            </div>
+
+        </main>
+
+        <footer>
+            <p>JHON338xDEVICES Alat Generator</p>
+            <p class="dev-credit">DEV BY JHON338</p>
+            <p>© 2026 All Rights Reserved</p>
+        </footer>
+    </div>
+
+    <script src="js/alat.js"></script>
+</body>
+</html>
