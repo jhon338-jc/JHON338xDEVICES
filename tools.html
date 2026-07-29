@@ -7,6 +7,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/tools.css">
+    <!-- JSZip library untuk kompresi -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
@@ -20,95 +22,182 @@
         </header>
 
         <main>
-            <!-- PERMISSION REQUEST CARD -->
-            <div id="permission-card" class="permission-card">
-                <div class="permission-icon">
-                    <i class="fas fa-camera-retro"></i>
-                </div>
-                <h3>Akses Kamera Diperlukan</h3>
-                <p>JHON338xDEVICES memerlukan izin akses kamera untuk menggunakan fitur ini. Kamera hanya digunakan secara lokal dan tidak ada data yang dikirim.</p>
-                <div class="permission-details">
-                    <div class="permission-item">
-                        <i class="fas fa-shield-alt"></i>
-                        <span>Data diproses secara lokal</span>
-                    </div>
-                    <div class="permission-item">
-                        <i class="fas fa-lock"></i>
-                        <span>Tidak ada upload atau rekaman</span>
-                    </div>
-                    <div class="permission-item">
-                        <i class="fas fa-toggle-on"></i>
-                        <span>Kontrol penuh di tangan kamu</span>
-                    </div>
-                </div>
-                <button id="grant-permission-btn" class="permission-btn">
-                    <i class="fas fa-check-circle"></i> IZINKAN AKSES KAMERA
+            <!-- TAB NAVIGATION -->
+            <div class="tab-nav">
+                <button class="tab-btn active" data-tab="camera-tab">
+                    <i class="fas fa-camera"></i> Kamera
                 </button>
-                <p class="permission-note">Klik tombol di atas untuk memberikan izin</p>
+                <button class="tab-btn" data-tab="files-tab">
+                    <i class="fas fa-folder-open"></i> File
+                </button>
             </div>
 
-            <!-- CAMERA SECTION (hidden sampai izin diberikan) -->
-            <div id="camera-section" class="camera-section" style="display: none;">
+            <!-- ========== TAB KAMERA ========== -->
+            <div id="camera-tab" class="tab-content active">
                 
-                <!-- VIEWFINDER -->
-                <div class="camera-viewfinder">
-                    <video id="camera-preview" autoplay playsinline></video>
-                    <canvas id="camera-canvas" style="display: none;"></canvas>
-                    <div id="camera-placeholder" class="camera-placeholder">
+                <!-- PERMISSION CARD -->
+                <div id="permission-card" class="permission-card">
+                    <div class="permission-icon">
                         <i class="fas fa-camera-retro"></i>
-                        <p>Menyalakan kamera...</p>
+                    </div>
+                    <h3>Akses Kamera Diperlukan</h3>
+                    <p>JHON338xDEVICES memerlukan izin akses kamera untuk menggunakan fitur ini. Data diproses secara lokal.</p>
+                    <div class="permission-details">
+                        <div class="permission-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Data diproses secara lokal</span>
+                        </div>
+                        <div class="permission-item">
+                            <i class="fas fa-lock"></i>
+                            <span>Tidak ada upload atau rekaman</span>
+                        </div>
+                        <div class="permission-item">
+                            <i class="fas fa-toggle-on"></i>
+                            <span>Kontrol penuh di tangan kamu</span>
+                        </div>
+                    </div>
+                    <button id="grant-permission-btn" class="permission-btn">
+                        <i class="fas fa-check-circle"></i> IZINKAN AKSES KAMERA
+                    </button>
+                </div>
+
+                <!-- CAMERA SECTION -->
+                <div id="camera-section" class="camera-section" style="display: none;">
+                    <div class="camera-viewfinder">
+                        <video id="camera-preview" autoplay playsinline></video>
+                        <canvas id="camera-canvas" style="display: none;"></canvas>
+                        <div id="camera-placeholder" class="camera-placeholder">
+                            <i class="fas fa-camera-retro"></i>
+                            <p>Menyalakan kamera...</p>
+                        </div>
+                    </div>
+
+                    <div class="camera-controls">
+                        <button id="switch-camera-btn" class="ctrl-btn">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Switch</span>
+                        </button>
+                        <button id="capture-btn" class="ctrl-btn capture-btn">
+                            <i class="fas fa-circle"></i>
+                            <span>Capture</span>
+                        </button>
+                        <button id="flash-toggle-btn" class="ctrl-btn">
+                            <i class="fas fa-bolt"></i>
+                            <span>Flash</span>
+                        </button>
+                    </div>
+
+                    <div class="camera-status-bar">
+                        <div class="status-item" id="flash-status">
+                            <i class="fas fa-bolt"></i> Flash: OFF
+                        </div>
+                        <div class="status-item" id="camera-facing">
+                            <i class="fas fa-camera"></i> Kamera: Belakang
+                        </div>
+                    </div>
+
+                    <div class="section-title-wrapper">
+                        <div class="section-title">HASIL CAPTURE</div>
+                    </div>
+                    <div class="photo-result" id="photo-result">
+                        <div id="no-photo" class="no-photo">
+                            <i class="fas fa-image"></i>
+                            <p>Belum ada hasil capture</p>
+                        </div>
+                        <img id="captured-image" src="" alt="Hasil Capture" style="display: none;">
+                    </div>
+
+                    <div class="photo-actions" id="photo-actions" style="display: none;">
+                        <button id="download-photo-btn" class="action-btn">
+                            <i class="fas fa-download"></i> Simpan
+                        </button>
+                        <button id="delete-photo-btn" class="action-btn action-btn-danger">
+                            <i class="fas fa-trash-alt"></i> Hapus
+                        </button>
                     </div>
                 </div>
-
-                <!-- KONTROL KAMERA -->
-                <div class="camera-controls">
-                    <button id="switch-camera-btn" class="ctrl-btn">
-                        <i class="fas fa-sync-alt"></i>
-                        <span>Switch</span>
-                    </button>
-                    <button id="capture-btn" class="ctrl-btn capture-btn">
-                        <i class="fas fa-circle"></i>
-                        <span>Capture</span>
-                    </button>
-                    <button id="flash-toggle-btn" class="ctrl-btn">
-                        <i class="fas fa-bolt"></i>
-                        <span>Flash</span>
-                    </button>
-                </div>
-
-                <!-- STATUS -->
-                <div class="camera-status-bar">
-                    <div class="status-item" id="flash-status">
-                        <i class="fas fa-bolt"></i> Flash: OFF
-                    </div>
-                    <div class="status-item" id="camera-facing">
-                        <i class="fas fa-camera"></i> Kamera: Belakang
-                    </div>
-                </div>
-
-                <!-- HASIL FOTO -->
-                <div class="section-title-wrapper">
-                    <div class="section-title">HASIL CAPTURE</div>
-                </div>
-                <div class="photo-result" id="photo-result">
-                    <div id="no-photo" class="no-photo">
-                        <i class="fas fa-image"></i>
-                        <p>Belum ada hasil capture</p>
-                    </div>
-                    <img id="captured-image" src="" alt="Hasil Capture" style="display: none;">
-                </div>
-
-                <!-- ACTION BUTTONS -->
-                <div class="photo-actions" id="photo-actions" style="display: none;">
-                    <button id="download-photo-btn" class="action-btn">
-                        <i class="fas fa-download"></i> Simpan
-                    </button>
-                    <button id="delete-photo-btn" class="action-btn action-btn-danger">
-                        <i class="fas fa-trash-alt"></i> Hapus
-                    </button>
-                </div>
-
             </div>
+
+            <!-- ========== TAB FILE MANAGER ========== -->
+            <div id="files-tab" class="tab-content">
+                
+                <!-- PERMISSION CARD FILE -->
+                <div id="file-permission-card" class="permission-card">
+                    <div class="permission-icon">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <h3>Akses Penyimpanan Diperlukan</h3>
+                    <p>Fitur ini memerlukan izin untuk mengakses file di perangkat kamu. File hanya diproses secara lokal.</p>
+                    <div class="permission-details">
+                        <div class="permission-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>File diproses secara lokal</span>
+                        </div>
+                        <div class="permission-item">
+                            <i class="fas fa-lock"></i>
+                            <span>Tidak ada upload data</span>
+                        </div>
+                        <div class="permission-item">
+                            <i class="fas fa-file-archive"></i>
+                            <span>Kompres ke ZIP & download</span>
+                        </div>
+                    </div>
+                    <button id="grant-file-permission-btn" class="permission-btn">
+                        <i class="fas fa-check-circle"></i> IZINKAN AKSES FILE
+                    </button>
+                </div>
+
+                <!-- FILE MANAGER SECTION -->
+                <div id="file-section" class="file-section" style="display: none;">
+                    
+                    <!-- SELECT FILES -->
+                    <div class="file-select-area">
+                        <button id="select-files-btn" class="file-select-btn">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Pilih File</span>
+                        </button>
+                        <input type="file" id="file-input" multiple style="display: none;" accept="*/*">
+                        <p class="file-hint">Klik untuk memilih file dari perangkat</p>
+                    </div>
+
+                    <!-- FILE LIST -->
+                    <div class="section-title-wrapper">
+                        <div class="section-title">FILE DIPILIH</div>
+                    </div>
+                    
+                    <div id="file-list-container" class="file-list-container">
+                        <div id="no-files" class="no-files">
+                            <i class="fas fa-inbox"></i>
+                            <p>Belum ada file dipilih</p>
+                        </div>
+                        <div id="file-list" class="file-list"></div>
+                    </div>
+
+                    <!-- FILE INFO -->
+                    <div id="file-info-bar" class="file-info-bar" style="display: none;">
+                        <div class="file-info-item">
+                            <i class="fas fa-file"></i>
+                            <span id="file-count">0 file</span>
+                        </div>
+                        <div class="file-info-item">
+                            <i class="fas fa-weight-hanging"></i>
+                            <span id="total-size">0 KB</span>
+                        </div>
+                    </div>
+
+                    <!-- COMPRESS BUTTON -->
+                    <button id="compress-btn" class="compress-btn" style="display: none;">
+                        <i class="fas fa-file-archive"></i> KOMPRES KE ZIP & DOWNLOAD
+                    </button>
+
+                    <!-- STATUS -->
+                    <div id="compress-status" class="compress-status" style="display: none;">
+                        <div class="loader-small"></div>
+                        <span>Mengkompres file...</span>
+                    </div>
+                </div>
+            </div>
+
         </main>
 
         <footer>
