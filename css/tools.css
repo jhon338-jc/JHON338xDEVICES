@@ -6,10 +6,11 @@
     --bg-color: #06090e;
     --card-bg: #0f141d;
     --accent-blue: #4bd5ff;
+    --accent-red: #ff3333;
+    --accent-green: #25D366;
     --text-main: #ffffff;
     --text-sub: #8a93a6;
     --border-tech: #2a4b6e;
-    --success-green: #25D366;
 }
 
 * {
@@ -92,6 +93,55 @@ main {
     padding: 15px;
 }
 
+/* ========== TAB NAVIGATION ========== */
+.tab-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.tab-btn {
+    flex: 1;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-tech);
+    color: var(--text-sub);
+    padding: 10px;
+    border-radius: 10px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.tab-btn.active {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+    background-color: rgba(75, 213, 255, 0.08);
+    box-shadow: 0 0 10px rgba(75, 213, 255, 0.2);
+}
+
+.tab-btn i {
+    font-size: 0.9rem;
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* ========== PERMISSION CARD ========== */
 .permission-card {
     background-color: var(--card-bg);
@@ -100,6 +150,7 @@ main {
     padding: 25px 20px;
     text-align: center;
     box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    margin-bottom: 15px;
 }
 
 .permission-icon {
@@ -149,7 +200,7 @@ main {
 }
 
 .permission-item i {
-    color: var(--success-green);
+    color: var(--accent-green);
     font-size: 0.9rem;
     width: 20px;
     text-align: center;
@@ -176,14 +227,6 @@ main {
 
 .permission-btn:active {
     transform: scale(0.95);
-    background-color: #3ab8e0;
-}
-
-.permission-note {
-    font-size: 0.7rem;
-    color: var(--text-sub);
-    margin-top: 12px;
-    margin-bottom: 0;
 }
 
 /* ========== CAMERA SECTION ========== */
@@ -191,12 +234,6 @@ main {
     animation: fadeIn 0.4s ease;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* ========== CAMERA VIEWFINDER ========== */
 .camera-viewfinder {
     width: 100%;
     aspect-ratio: 4 / 3;
@@ -241,11 +278,6 @@ main {
     50% { opacity: 1; }
 }
 
-.camera-placeholder p {
-    font-size: 0.85rem;
-}
-
-/* ========== CAMERA CONTROLS ========== */
 .camera-controls {
     display: flex;
     justify-content: center;
@@ -274,21 +306,13 @@ main {
     color: var(--accent-blue);
 }
 
-.ctrl-btn span {
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
 .ctrl-btn:active {
     transform: scale(0.93);
     border-color: var(--accent-blue);
-    box-shadow: 0 0 15px rgba(75, 213, 255, 0.3);
 }
 
 .capture-btn {
     border-color: var(--accent-blue);
-    padding: 14px 22px;
 }
 
 .capture-btn i {
@@ -297,10 +321,8 @@ main {
     text-shadow: 0 0 10px rgba(255,255,255,0.5);
 }
 
-/* ========== STATUS BAR ========== */
 .camera-status-bar {
     display: flex;
-    justify-content: space-between;
     gap: 10px;
     margin-bottom: 20px;
 }
@@ -323,31 +345,26 @@ main {
 
 .status-item i {
     color: var(--accent-blue);
-    font-size: 0.7rem;
 }
 
 /* ========== SECTION TITLE ========== */
 .section-title-wrapper {
     display: flex;
     justify-content: center;
-    align-items: center;
     margin-bottom: 15px;
 }
 
 .section-title {
     font-family: 'Orbitron', sans-serif;
     font-size: 0.9rem;
-    color: var(--text-main);
     text-transform: uppercase;
     letter-spacing: 2px;
     border: 1px solid var(--border-tech);
     padding: 6px 20px;
     border-radius: 6px;
     background-color: rgba(42, 75, 110, 0.2);
-    box-shadow: 0 0 10px rgba(75, 213, 255, 0.1);
 }
 
-/* ========== PHOTO RESULT ========== */
 .photo-result {
     background-color: var(--card-bg);
     border: 1px solid var(--border-tech);
@@ -357,7 +374,6 @@ main {
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    position: relative;
 }
 
 .no-photo {
@@ -373,18 +389,12 @@ main {
     color: var(--border-tech);
 }
 
-.no-photo p {
-    font-size: 0.85rem;
-}
-
 .photo-result img {
     width: 100%;
     height: auto;
-    object-fit: contain;
     border-radius: 8px;
 }
 
-/* ========== PHOTO ACTIONS ========== */
 .photo-actions {
     display: flex;
     gap: 10px;
@@ -405,12 +415,10 @@ main {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    transition: 0.2s;
 }
 
 .action-btn:active {
     transform: scale(0.95);
-    border-color: var(--accent-blue);
 }
 
 .action-btn-danger {
@@ -418,8 +426,212 @@ main {
     border-color: rgba(255, 51, 51, 0.3);
 }
 
-.action-btn-danger:active {
-    border-color: var(--accent-red);
+/* ========== FILE SECTION ========== */
+.file-section {
+    animation: fadeIn 0.4s ease;
+}
+
+.file-select-area {
+    background-color: var(--card-bg);
+    border: 2px dashed var(--border-tech);
+    border-radius: 16px;
+    padding: 30px 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    transition: 0.2s;
+}
+
+.file-select-area:active {
+    border-color: var(--accent-blue);
+    background-color: rgba(75, 213, 255, 0.03);
+}
+
+.file-select-btn {
+    background-color: transparent;
+    border: none;
+    color: var(--accent-blue);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    font-family: 'Rajdhani', sans-serif;
+}
+
+.file-select-btn i {
+    font-size: 2.5rem;
+}
+
+.file-select-btn span {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.file-hint {
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    margin-top: 10px;
+}
+
+/* ========== FILE LIST ========== */
+.file-list-container {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-tech);
+    border-radius: 12px;
+    min-height: 100px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.no-files {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    color: var(--text-sub);
+    gap: 8px;
+}
+
+.no-files i {
+    font-size: 2rem;
+    color: var(--border-tech);
+}
+
+.file-list {
+    padding: 8px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background-color: rgba(15, 20, 29, 0.6);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    border: 1px solid rgba(42, 75, 110, 0.3);
+}
+
+.file-item-icon {
+    font-size: 1.2rem;
+    color: var(--accent-blue);
+    width: 32px;
+    text-align: center;
+}
+
+.file-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-item-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-item-size {
+    font-size: 0.7rem;
+    color: var(--text-sub);
+}
+
+.file-item-remove {
+    background: none;
+    border: none;
+    color: var(--accent-red);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 5px;
+}
+
+/* ========== FILE INFO BAR ========== */
+.file-info-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.file-info-item {
+    flex: 1;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-tech);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    color: var(--accent-blue);
+}
+
+.file-info-item i {
+    font-size: 0.9rem;
+}
+
+/* ========== COMPRESS BUTTON ========== */
+.compress-btn {
+    width: 100%;
+    background-color: var(--accent-blue);
+    color: #000;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.2s;
+    letter-spacing: 1px;
+}
+
+.compress-btn:active {
+    transform: scale(0.95);
+    background-color: #3ab8e0;
+}
+
+.compress-btn:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* ========== COMPRESS STATUS ========== */
+.compress-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px;
+    margin-top: 12px;
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-tech);
+    color: var(--accent-blue);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+}
+
+.loader-small {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-tech);
+    border-top: 2px solid var(--accent-blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* ========== FOOTER ========== */
