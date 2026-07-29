@@ -1,4 +1,4 @@
-// JHON338xDEVICES - Logic Lengkap
+// JHON338xDEVICES - Logic Lengkap dengan Deteksi Akurat
 
 (function() {
     'use strict';
@@ -32,6 +32,7 @@
     // ========== STATE ==========
     const STORAGE_KEY = 'jhon338xdevices_username';
     let isMuted = true;
+    let deviceInfoCache = null;
 
     // ========== FUNCTIONS ==========
     function getSavedUsername() {
@@ -107,7 +108,7 @@
         }
     });
 
-    // ========== EDIT USERNAME (hanya dari badge Edit) ==========
+    // ========== EDIT USERNAME ==========
     editBadge.addEventListener('click', function() {
         showUsernameModal();
     });
@@ -123,13 +124,12 @@
         isMuted = !isMuted;
         bgVideo.muted = isMuted;
         if (isMuted) {
-            muteToggle.innerHTML = ' MUTE';
+            muteToggle.innerHTML = 'MUTE';
         } else {
-            muteToggle.innerHTML = ' UNMUTE';
+            muteToggle.innerHTML = 'UNMUTE';
         }
     });
 
-    // Init video
     bgVideo.muted = true;
     bgVideo.style.filter = `blur(${blurSlider.value}px)`;
     blurValue.textContent = blurSlider.value;
@@ -162,87 +162,271 @@
                 batteryStatus.textContent = '--';
             }
         } catch (e) {
-            batteryLevel.textContent = '--';
-            batteryStatus.textContent = '--';
+            batteryLevel.textContent = '--%';
+            batteryStatus.textContent = 'Error';
         }
     }
 
     function updateNetwork() {
         if ('connection' in navigator) {
             const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-            if (conn) {
-                networkType.textContent = (conn.effectiveType || conn.type || 'WiFi').toUpperCase();
+            if (conn && conn.effectiveType) {
+                networkType.textContent = conn.effectiveType.toUpperCase();
                 conn.addEventListener('change', () => {
-                    networkType.textContent = (conn.effectiveType || conn.type || 'WiFi').toUpperCase();
+                    networkType.textContent = (conn.effectiveType || 'WiFi').toUpperCase();
                 });
+            } else if (conn && conn.type) {
+                networkType.textContent = conn.type.toUpperCase();
+            } else {
+                networkType.textContent = navigator.onLine ? 'ONLINE' : 'OFFLINE';
             }
         } else {
             networkType.textContent = navigator.onLine ? 'ONLINE' : 'OFFLINE';
         }
+
+        window.addEventListener('online', () => {
+            networkType.textContent = 'ONLINE';
+        });
+        window.addEventListener('offline', () => {
+            networkType.textContent = 'OFFLINE';
+        });
     }
 
     async function fetchIP() {
+        // Coba beberapa API untuk redundansi
+        const apis = [
+            'https://api.ipify.org?format=json',
+            'https://api.myip.com',
+            'https://ipapi.co/json/'
+        ];
+
+        for (const api of apis) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const res = await fetch(api, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
+                const data = await res.json();
+                
+                if (data.ip) {
+                    ipAddress.textContent = data.ip;
+                    return;
+                } else if (data.ip_address) {
+                    ipAddress.textContent = data.ip_address;
+                    return;
+                }
+            } catch (e) {
+                continue;
+            }
+        }
+        
+        // Fallback: cek lokal
         try {
-            const res = await fetch('https://api.ipify.org?format=json');
-            const data = await res.json();
-            ipAddress.textContent = data.ip;
+            const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+            pc.createDataChannel('');
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            
+            // Tunggu kandidat ICE
+            const localIP = await new Promise((resolve, reject) => {
+                const timeout = setTimeout(() => reject(new Error('timeout')), 3000);
+                pc.onicecandidate = (e) => {
+                    if (e.candidate) {
+                        const ip = e.candidate.address;
+                        if (ip && !ip.includes(':')) {
+                            clearTimeout(timeout);
+                            resolve(ip);
+                        }
+                    }
+                };
+            });
+            
+            ipAddress.textContent = localIP || 'Tidak terdeteksi';
         } catch (e) {
-            ipAddress.textContent = '--.--.--.--';
+            ipAddress.textContent = 'Periksa koneksi';
         }
     }
 
-    function detectDevice() {
-        const ua = navigator.userAgent;
-        let brand = 'Unknown';
-        let model = 'Unknown';
+    function detectDeviceInfo() {
+        if (deviceInfoCache) {
+            renderDeviceInfo(deviceInfoCache);
+            return;
+        }
 
+        const ua = navigator.userAgent;
+        const platform = navigator.platform || '';
+        const maxTouchPoints = navigator.maxTouchPoints || 0;
+        const vendor = navigator.vendor || '';
+        
+        let brand = '';
+        let model = '';
+        let os = '';
+
+        // ===== DETEKSI OS & VERSI =====
+        if (/Android/.test(ua)) {
+            const match = ua.match(/Android\s([\d.]+)/);
+            os = match ? 'Android ' + match[1] : 'Android';
+            
+            // Coba ambil dari navigator.userAgentData (modern)
+            if (navigator.userAgentData && navigator.userAgentData.platform) {
+                os = navigator.userAgentData.platform + ' ' + (match ? match[1] : '');
+            }
+        } else if (/iPhone|iPad|iPod/.test(ua)) {
+            const match = ua.match(/OS\s(\d+[_\d]*)/);
+            os = match ? 'iOS ' + match[1].replace(/_/g, '.') : 'iOS';
+            
+            if (/iPad/.test(ua) || (platform === 'MacIntel' && maxTouchPoints > 1)) {
+                os = 'iPadOS ' + (match ? match[1].replace(/_/g, '.') : '');
+            }
+        } else if (/Windows/.test(ua)) {
+            const match = ua.match(/Windows NT\s([\d.]+)/);
+            os = match ? 'Windows ' + mapWindowsVersion(match[1]) : 'Windows';
+        } else if (/Macintosh/.test(ua) || /Mac OS X/.test(ua)) {
+            const match = ua.match(/Mac OS X\s([\d_]+)/);
+            os = match ? 'macOS ' + match[1].replace(/_/g, '.') : 'macOS';
+        } else if (/Linux/.test(ua) && !/Android/.test(ua)) {
+            os = 'Linux';
+        } else {
+            os = 'Unknown OS';
+        }
+
+        // ===== DETEKSI MEREK & MODEL =====
         if (/iPhone/.test(ua)) {
             brand = 'Apple';
-            model = 'iPhone';
-        } else if (/iPad/.test(ua)) {
+            model = detectiPhoneModel(ua);
+        } else if (/iPad/.test(ua) || (platform === 'MacIntel' && maxTouchPoints > 1)) {
             brand = 'Apple';
             model = 'iPad';
         } else if (/Android/.test(ua)) {
-            brand = 'Android';
-            const match = ua.match(/;\s?([^;]+?)\s(Build|\))/);
-            if (match && match[1]) model = match[1].trim();
-            if (/Samsung|SM-/i.test(ua)) brand = 'Samsung';
-            else if (/Xiaomi|Mi|Redmi|POCO/i.test(ua)) brand = 'Xiaomi';
-            else if (/OPPO/i.test(ua)) brand = 'OPPO';
-            else if (/vivo/i.test(ua)) brand = 'vivo';
-            else if (/Huawei|Honor/i.test(ua)) brand = 'Huawei';
-            else if (/Realme/i.test(ua)) brand = 'Realme';
+            // Coba User-Agent Client Hints dulu (modern)
+            if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+                navigator.userAgentData.getHighEntropyValues(['model', 'platformVersion'])
+                    .then(data => {
+                        if (data.model) model = data.model;
+                        detectAndroidBrand(ua, brand, model);
+                    })
+                    .catch(() => {
+                        detectAndroidBrand(ua, brand, model);
+                    });
+            }
+            
+            const result = detectAndroidBrandModel(ua);
+            brand = result.brand;
+            model = result.model;
         } else if (/Windows/.test(ua)) {
             brand = 'Microsoft';
-            model = 'PC';
+            model = 'PC/Desktop';
         } else if (/Macintosh/.test(ua)) {
             brand = 'Apple';
             model = 'Mac';
+        } else {
+            brand = 'Unknown';
+            model = 'Unknown Device';
         }
 
-        deviceBrand.textContent = brand;
-        deviceModel.textContent = model;
+        deviceInfoCache = { brand, model, os };
+        renderDeviceInfo(deviceInfoCache);
     }
 
-    function detectOS() {
-        const ua = navigator.userAgent;
-        let os = 'Unknown';
-        if (/Android\s([\d.]+)/.test(ua)) os = 'Android ' + RegExp.$1;
-        else if (/iPhone OS\s([\d_]+)/.test(ua)) os = 'iOS ' + RegExp.$1.replace(/_/g, '.');
-        else if (/Windows NT\s([\d.]+)/.test(ua)) os = 'Windows ' + RegExp.$1;
-        else if (/Mac OS X\s([\d_]+)/.test(ua)) os = 'macOS ' + RegExp.$1.replace(/_/g, '.');
-        osVersion.textContent = os;
+    function detectAndroidBrandModel(ua) {
+        let brand = 'Android';
+        let model = '';
+
+        // Ekstrak model dari build fingerprint
+        const buildMatch = ua.match(/;\s?([^;]+?)\s(Build\/|\))/);
+        if (buildMatch && buildMatch[1]) {
+            model = buildMatch[1].trim();
+        }
+
+        // Deteksi brand spesifik
+        const brands = [
+            { pattern: /Samsung|SM-|GT-|SCH-/i, name: 'Samsung' },
+            { pattern: /Xiaomi|Mi\s|Redmi|POCO|M\d{4}/i, name: 'Xiaomi' },
+            { pattern: /OPPO|CPH|RMX/i, name: 'OPPO' },
+            { pattern: /vivo|V\d{4}|iQOO/i, name: 'vivo' },
+            { pattern: /Huawei|Honor|HMA-|ANE-|CLT-/i, name: 'Huawei' },
+            { pattern: /Realme|RMX/i, name: 'Realme' },
+            { pattern: /OnePlus|LE\d{4}|GM\d{4}/i, name: 'OnePlus' },
+            { pattern: /Motorola|Moto|XT\d{4}/i, name: 'Motorola' },
+            { pattern: /LG|LM-|LGM-/i, name: 'LG' },
+            { pattern: /Infinix|X\d{3,4}/i, name: 'Infinix' },
+            { pattern: /Tecno|TECNO/i, name: 'Tecno' },
+            { pattern: /Asus|ASUS|Zenfone/i, name: 'Asus' },
+            { pattern: /Sony|Xperia/i, name: 'Sony' },
+            { pattern: /Nokia/i, name: 'Nokia' },
+            { pattern: /Google|Pixel/i, name: 'Google' },
+            { pattern: /Nothing/i, name: 'Nothing' },
+        ];
+
+        for (const b of brands) {
+            if (b.pattern.test(ua)) {
+                brand = b.name;
+                break;
+            }
+        }
+
+        // Jika model kosong, coba ambil dari product name
+        if (!model) {
+            const productMatch = ua.match(/\)\s?([\w\s-]+?)\s(Build|Chrome)/);
+            if (productMatch && productMatch[1]) {
+                model = productMatch[1].trim();
+            }
+        }
+
+        // Fallback model
+        if (!model || model === 'K' || model.length < 2) {
+            model = 'Android Device';
+        }
+
+        return { brand, model };
     }
 
+    function detectiPhoneModel(ua) {
+        if (/iPhone16,2/.test(ua) || /iPhone 15 Pro Max/i.test(ua)) return 'iPhone 15 Pro Max';
+        if (/iPhone16,1/.test(ua) || /iPhone 15 Pro/i.test(ua)) return 'iPhone 15 Pro';
+        if (/iPhone15,4/.test(ua) || /iPhone 15/.test(ua)) return 'iPhone 15';
+        if (/iPhone15,2/.test(ua) || /iPhone 14 Pro Max/i.test(ua)) return 'iPhone 14 Pro Max';
+        if (/iPhone14,3/.test(ua) || /iPhone 13 Pro Max/i.test(ua)) return 'iPhone 13 Pro Max';
+        return 'iPhone';
+    }
+
+    function mapWindowsVersion(nt) {
+        const versions = {
+            '10.0': '10/11',
+            '6.3': '8.1',
+            '6.2': '8',
+            '6.1': '7',
+        };
+        return versions[nt] || nt;
+    }
+
+    function renderDeviceInfo(info) {
+        deviceBrand.textContent = info.brand;
+        deviceModel.textContent = info.model;
+        osVersion.textContent = info.os;
+    }
+
+    // ===== INISIALISASI SEMUA =====
     function initAllRealtime() {
         updateDateTime();
         setInterval(updateDateTime, 1000);
+        
         updateBattery();
         updateNetwork();
         fetchIP();
-        detectDevice();
-        detectOS();
-        setInterval(fetchIP, 30000);
+        detectDeviceInfo();
+        
+        // Refresh berkala
+        setInterval(fetchIP, 60000);
+        setInterval(detectDeviceInfo, 30000);
     }
+
+    // Jalankan deteksi ulang saat online
+    window.addEventListener('online', () => {
+        fetchIP();
+        updateNetwork();
+    });
 
 })();
